@@ -24,6 +24,16 @@ Please edit the following:
 
 In the docker-compose file, please edit the following line:
 
-```
-traefik.http.routers.zabbix.rule: "Host(`monitor.exapmle.org`)"
+```yaml
+# Under services
+  zabbix-web-nginx-pgsql:
+    ...
+    labels:
+      traefik.http.routers.zabbix.rule: "Host(`monitor.exapmle.org`)"
+...
+  traefik:
+    ...
+    environment:
+      - CLOUDFLARE_EMAIL=test@example.org
+      - CLOUDFLARE_DNS_API_TOKEN=XXXXX
 ```
