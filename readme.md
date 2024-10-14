@@ -12,28 +12,21 @@ This is a simple docker-compose setup for Zabbix. It includes the following cont
 
 Please edit the following:
 
-### Env Variables
-* `env_vars/.env_web`
-    * `ZBX_SERVER_NAME=Example Org Monitoring`
-* `env_vars/.env_agent`
-    * `ZBX_HOSTNAME=example`
-* `env_vars/.POSTGRES_PASSWORD`
+- `./env_vars/.POSTGRES_PASSWORD` - Change the password for the Postgres database
+- `./.env` - Change the following parameters:
+    * `ZBX_VERSION` - Zabbix version you would like to use, for example, 7.0
+    * `FQDN` - Fully Qualified Domain Name for the Zabbix Frontend
+    * `SERVICE_NAME` - Name of the service, for example, zabbix
+    * `LE_EMAIL` - Email for Let's Encrypt
+    * `CF_EMAIL` - Cloudflare email. If you are not using Cloudflare, remove the Cloudflare settings from the traefik service in the `docker-compose.yml` file
+    * `CF_API_KEY` - Cloudflare API key. If you are not using Cloudflare, remove the Cloudflare settings from the traefik service in the `docker-compose.yml` file
 
+The `./env_vars` directory contains the environment variables for the Zabbix containers. You can edit these files to change the default settings for the Zabbix containers.
 
-### Docker-compose
+## Usage
 
-In the docker-compose file, please edit the following line:
+To start the Zabbix setup, run the following command:
 
-```yaml
-# Under services
-  zabbix-web-nginx-pgsql:
-    ...
-    labels:
-      traefik.http.routers.zabbix.rule: "Host(`monitor.exapmle.org`)"
-...
-  traefik:
-    ...
-    environment:
-      - CLOUDFLARE_EMAIL=test@example.org
-      - CLOUDFLARE_DNS_API_TOKEN=XXXXX
+```bash
+docker-compose up -d
 ```

@@ -1,7 +1,7 @@
 version: '3.5'
 services:
   zabbix-server:
-    image: zabbix/zabbix-server-pgsql:ubuntu-7.0-latest
+    image: zabbix/zabbix-server-pgsql:ubuntu-${ZBX_VERSION}-latest
     ports:
       - "10051:10051"
     volumes:
@@ -15,9 +15,6 @@ services:
       - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
       - ./zbx_env/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:ro
       - snmptraps:/var/lib/zabbix/snmptraps:rw
-    #   - ./env_vars/.ZBX_DB_CA_FILE:/run/secrets/root-ca.pem:ro
-    #   - ./env_vars/.ZBX_DB_CERT_FILE:/run/secrets/client-cert.pem:ro
-    #   - ./env_vars/.ZBX_DB_KEY_FILE:/run/secrets/client-key.pem:ro
     ulimits:
       nproc: 65535
       nofile:
@@ -48,15 +45,9 @@ services:
       - net.ipv4.conf.all.accept_redirects=0
       - net.ipv4.conf.all.secure_redirects=0
       - net.ipv4.conf.all.send_redirects=0
-    labels:
-      com.zabbix.description: "Zabbix server with PostgreSQL database support"
-      com.zabbix.company: "Zabbix LLC"
-      com.zabbix.component: "zabbix-server"
-      com.zabbix.dbtype: "pgsql"
-      com.zabbix.os: "ubuntu"
 
   zabbix-web-nginx-pgsql:
-    image: zabbix/zabbix-web-nginx-pgsql:ubuntu-7.0-latest
+    image: zabbix/zabbix-web-nginx-pgsql:ubuntu-${ZBX_VERSION}-latest
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./zbx_env/etc/ssl/nginx:/etc/ssl/nginx:ro
@@ -73,6 +64,8 @@ services:
     env_file:
       - ./env_vars/.env_db_pgsql
       - ./env_vars/.env_web
+    environment:
+      ZBX_SERVER_NAME: "${SERVICE_NAME}"
     secrets:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
@@ -97,19 +90,13 @@ services:
       - net.core.somaxconn=65535
     labels:
       com.zabbix.description: "Zabbix frontend on Nginx web-server with PostgreSQL database support"
-      com.zabbix.company: "Zabbix LLC"
-      com.zabbix.component: "zabbix-frontend"
-      com.zabbix.webserver: "nginx"
-      com.zabbix.dbtype: "pgsql"
-      com.zabbix.os: "ubuntu"
       traefik.enable: true
-      traefik.docker.network: "zabbix_zbx_net_frontend"
-      traefik.http.routers.zabbix.rule: "Host(`monitor.example.org`)"
+      traefik.http.routers.zabbix.rule: "Host(`${FQDN}`)"
       traefik.http.routers.zabbix.entrypoints: "websecure"
       traefik.http.routers.zabbix.tls.certresolver: "resolver"
 
   zabbix-agent:
-    image: zabbix/zabbix-agent2:ubuntu-7.0-latest
+    image: zabbix/zabbix-agent2:ubuntu-${ZBX_VERSION}-latest
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./zbx_env/etc/zabbix/zabbix_agentd.d:/etc/zabbix/zabbix_agentd.d:ro
@@ -122,12 +109,6 @@ services:
     privileged: true
     pid: "host"
     network_mode: "host"
-      #networks:
-      #zbx_net_backend:
-      #aliases:
-      # - zabbix-agent
-      # - zabbix-agent-passive
-      # - zabbix-agent-ubuntu
     stop_grace_period: 5s
     labels:
       com.zabbix.description: "Zabbix agent"
@@ -136,7 +117,7 @@ services:
       com.zabbix.os: "ubuntu"
 
   zabbix-snmptraps:
-    image: zabbix/zabbix-snmptraps:ubuntu-7.0-latest
+    image: zabbix/zabbix-snmptraps:ubuntu-${ZBX_VERSION}-latest
     ports:
       - "162:1162/udp"
     volumes:
@@ -162,10 +143,7 @@ services:
       com.zabbix.os: "ubuntu"
 
   zabbix-web-service:
-    image: zabbix/zabbix-web-service:ubuntu-7.0-latest
-    profiles:
-      - full
-      - all
+    image: zabbix/zabbix-web-service:ubuntu-${ZBX_VERSION}-latest
     ports:
       - "10053:10053"
     volumes:
@@ -199,7 +177,6 @@ services:
     #  command: -c ssl=on -c ssl_cert_file=/run/secrets/server-cert.pem -c ssl_key_file=/run/secrets/server-key.pem -c ssl_ca_file=/run/secrets/root-ca.pem
     volumes:
       - db:/var/lib/postgresql/data
-      #- ./zbx_env/var/lib/postgresql/data:/var/lib/postgresql/data:rw
       - ./env_vars/.ZBX_DB_CA_FILE:/run/secrets/root-ca.pem:ro
       - ./env_vars/.ZBX_DB_CERT_FILE:/run/secrets/server-cert.pem:ro
       - ./env_vars/.ZBX_DB_KEY_FILE:/run/secrets/server-key.pem:ro
@@ -234,13 +211,13 @@ services:
       - "--certificatesresolvers.resolver.acme.dnschallenge.provider=cloudflare"
       - "--certificatesresolvers.resolver.acme.dnschallenge.resolvers=1.1.1.1"
       #- "--certificatesresolvers.resolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
-      - "--certificatesresolvers.resolver.acme.email=techdept@esu2.org"
+      - "--certificatesresolvers.resolver.acme.email=${LE_EMAIL}"
       - "--certificatesresolvers.resolver.acme.storage=/letsencrypt/acme.json"
       - "--experimental.plugins.rewrite.modulename=github.com/traefik/plugin-rewritebody"
       - "--experimental.plugins.rewrite.version=v0.3.1"
     environment:
-      - CLOUDFLARE_EMAIL=test@example.org
-      - CLOUDFLARE_DNS_API_TOKEN=XXXXX
+      CLOUDFLARE_EMAIL: "${CF_EMAIL}"
+      CLOUDFLARE_DNS_API_TOKEN: "${CF_API_TOKEN}"
     ports:
       - "80:80"
       - "443:443"
