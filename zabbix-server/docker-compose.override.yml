@@ -1,0 +1,39 @@
+# Use this override file to handle your LE configuration
+
+services:
+  traefik:
+    command:
+      #- "--log.level=DEBUG"
+      #- "--accesslog=true"
+      - "--api.insecure=true"
+      - "--api.dashboard"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      #- "--certificatesresolvers.resolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.resolver.acme.email=${LE_EMAIL}"
+      - "--certificatesresolvers.resolver.acme.storage=/letsencrypt/acme.json"
+      - "--experimental.plugins.rewrite.modulename=github.com/traefik/plugin-rewritebody"
+      - "--experimental.plugins.rewrite.version=v0.3.1"
+
+      # Cloudflare DNS Challenge
+      - "--certificatesresolvers.resolver.acme.dnschallenge=true"
+      - "--certificatesresolvers.resolver.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.resolver.acme.dnschallenge.resolvers=1.1.1.1"
+
+      # GoDaddy DNS Challenge
+      #- "--certificatesresolvers.resolver.acme.dnschallenge=true"
+      #- "--certificatesresolvers.resolver.acme.dnschallenge.provider=godaddy"
+      #- "--certificatesresolvers.resolver.acme.dnschallenge.resolvers=1.1.1.1"
+
+      # HTTP Challenge
+      #- "--certificatesresolvers.resolver.acme.httpchallenge=true"
+      #- "--certificatesresolvers.resolver.acme.httpchallenge.entrypoint=web"
+
+    environment:
+      # Cloudflare DNS Challenge Environment Variables
+      CLOUDFLARE_EMAIL: "${CF_EMAIL}"
+      CLOUDFLARE_DNS_API_TOKEN: "${CF_API_TOKEN}"

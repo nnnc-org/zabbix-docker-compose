@@ -18,8 +18,11 @@ Please edit the following:
     * `FQDN` - Fully Qualified Domain Name for the Zabbix Frontend
     * `SERVICE_NAME` - Name of the service, for example, zabbix
     * `LE_EMAIL` - Email for Let's Encrypt
-    * `CF_EMAIL` - Cloudflare email. If you are not using Cloudflare, remove the Cloudflare settings from the traefik service in the `docker-compose.yml` file
-    * `CF_API_KEY` - Cloudflare API key. If you are not using Cloudflare, remove the Cloudflare settings from the traefik service in the `docker-compose.yml` file
+    * `WG_BASIC_AUTH` - Basic Auth for the Zabbix Web Service (view .env file for more information)
+
+    * Optional / Dynamic Parameters:
+      * `CF_EMAIL` - Cloudflare email. If you are not using Cloudflare, remove the Cloudflare settings from the traefik service in the `docker-compose.yml` file
+      * `CF_API_KEY` - Cloudflare API key. If you are not using Cloudflare, remove the Cloudflare settings from the traefik service in the `docker-compose.yml` file
 
 The `./env_vars` directory contains the environment variables for the Zabbix containers. You can edit these files to change the default settings for the Zabbix containers.
 
